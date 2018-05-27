@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -22,13 +24,40 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     ImageView iv;
+    Button ci,ui;
+    Bitmap bitmap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ci = (Button) findViewById(R.id.captureImg);
         iv = (ImageView) findViewById(R.id.imageView);
-        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(i,1);
+        ui = (Button) findViewById(R.id.uploadImage);
+        ci.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(i,1);
+            }
+        });
+
+        ui.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //ByteArrayStream
+                java.io.ByteArrayOutputStream byteArray = new java.io.ByteArrayOutputStream();
+                //compress the image into PNG format and into the bytearraystream
+               bitmap.compress(Bitmap.CompressFormat.PNG,100,byteArray);
+                //bytearraystream saved into bytearray
+                byte[] barray = byteArray.toByteArray();
+                //encode it into base 64
+
+                String encoded = android.util.Base64.encodeToString(barray,android.util.Base64.DEFAULT);
+                uploadImage(encoded);
+            }
+        });
+
+
     }
 
     @Override
@@ -37,21 +66,13 @@ public class MainActivity extends AppCompatActivity {
 
         if(requestCode == 1 && resultCode == RESULT_OK)
         {
-            //ByteArrayStream
-            java.io.ByteArrayOutputStream byteArray = new java.io.ByteArrayOutputStream();
-            //getting the bitmap image taken by camera
-            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-            //compress the image into PNG format and into the bytearraystream
-            bitmap.compress(Bitmap.CompressFormat.PNG,100,byteArray);
 
-            //bytearraystream saved into bytearray
-            byte[] barray = byteArray.toByteArray();
-            //encode it into base 64
-            String encoded = android.util.Base64.encodeToString(barray,android.util.Base64.DEFAULT);
-                uploadImage(encoded);
-            android.util.Log.i("Base: ",encoded);
+            //getting the bitmap image taken by camera
+            this.bitmap = (Bitmap) data.getExtras().get("data");
+
+
+
             iv.setImageBitmap(bitmap);
-            Toast.makeText(MainActivity.this,data.toString(),Toast.LENGTH_LONG).show();
         }
     }
 
